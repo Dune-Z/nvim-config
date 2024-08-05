@@ -23,6 +23,12 @@ vim.api.nvim_set_keymap('i', 'jj', '<Esc>', { noremap = true, silent = true })
 -- Visual mode mappings for continuous indentation
 vim.api.nvim_set_keymap('v', '>', '>gv', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('v', '<', '<gv', { noremap = true, silent = true })
+-- Key mappings for navigating diagnostics
+vim.api.nvim_set_keymap('n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>e', '<cmd>lua vim.diagnostic.open_float()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>q', '<cmd>lua vim.diagnostic.setloclist()<CR>', { noremap = true, silent = true })
+
 -- Return to the last edit position when reopening a file
 vim.api.nvim_create_autocmd('BufReadPost', {
     pattern = '*',
@@ -97,7 +103,49 @@ require('lazy').setup({
         },
         {
             'nvim-lualine/lualine.nvim',
-            dependencies = { 'nvim-tree/nvim-web-devicons' }
+            dependencies = { 'nvim-tree/nvim-web-devicons' },
+            config = function()
+                require'lualine'.setup {
+                    options = {
+                        icons_enabled = true,
+                        theme = 'auto',
+                        component_separators = { left = '', right = ''},
+                        section_separators = { left = '', right = ''},
+                        disabled_filetypes = {
+                            statusline = {},
+                            winbar = {},
+                        },
+                        ignore_focus = {},
+                        always_divide_middle = true,
+                        globalstatus = false,
+                        refresh = {
+                            statusline = 1000,
+                            tabline = 1000,
+                            winbar = 1000,
+                        }
+                    },
+                    sections = {
+                        lualine_a = {'mode'},
+                        lualine_b = {'branch', 'diff', 'diagnostics'},
+                        lualine_c = {'filename'},
+                        lualine_x = {'encoding', 'fileformat', 'filetype'},
+                        lualine_y = {'progress'},
+                        lualine_z = {'location'}
+                    },
+                    inactive_sections = {
+                        lualine_a = {},
+                        lualine_b = {},
+                        lualine_c = {'filename'},
+                        lualine_x = {'location'},
+                        lualine_y = {},
+                        lualine_z = {}
+                    },
+                    tabline = {},
+                    winbar = {},
+                    inactive_winbar = {},
+                    extensions = {}
+                }
+            end,
         },
         {
             'nvim-treesitter/nvim-treesitter',
@@ -191,9 +239,15 @@ require('lazy').setup({
             },
             config = function()
                 require'lspconfig'.pyright.setup{}
-                require'lspconfig'.lua_ls.setup{}
                 require'lspconfig'.rust_analyzer.setup{}
                 require'lspconfig'.clangd.setup{}
+                require'lspconfig'.lua_ls.setup{
+                    settings = {
+                        Lua = {
+                            diagnostics = { globals = { 'vim' } }
+                        }
+                    }
+                }
             end,
         }
     },
@@ -203,42 +257,43 @@ require('lazy').setup({
 
 
 require('lualine').setup {
-  options = {
-    icons_enabled = true,
-    theme = 'auto',
-    component_separators = { left = '', right = ''},
-    section_separators = { left = '', right = ''},
-    disabled_filetypes = {
-      statusline = {},
-      winbar = {},
+    options = {
+        icons_enabled = true,
+        theme = 'auto',
+        component_separators = { left = '', right = ''},
+        section_separators = { left = '', right = ''},
+        disabled_filetypes = {
+            statusline = {},
+            winbar = {},
+        },
+        ignore_focus = {},
+        always_divide_middle = true,
+        globalstatus = false,
+        refresh = {
+            statusline = 1000,
+            tabline = 1000,
+            winbar = 1000,
+        }
     },
-    ignore_focus = {},
-    always_divide_middle = true,
-    globalstatus = false,
-    refresh = {
-      statusline = 1000,
-      tabline = 1000,
-      winbar = 1000,
-    }
-  },
-  sections = {
-    lualine_a = {'mode'},
-    lualine_b = {'branch', 'diff', 'diagnostics'},
-    lualine_c = {'filename'},
-    lualine_x = {'encoding', 'fileformat', 'filetype'},
-    lualine_y = {'progress'},
-    lualine_z = {'location'}
-  },
-  inactive_sections = {
-    lualine_a = {},
-    lualine_b = {},
-    lualine_c = {'filename'},
-    lualine_x = {'location'},
-    lualine_y = {},
-    lualine_z = {}
-  },
-  tabline = {},
-  winbar = {},
-  inactive_winbar = {},
-  extensions = {}
+    sections = {
+        lualine_a = {'mode'},
+        lualine_b = {'branch', 'diff', 'diagnostics'},
+        lualine_c = {'filename'},
+        lualine_x = {'encoding', 'fileformat', 'filetype'},
+        lualine_y = {'progress'},
+        lualine_z = {'location'}
+    },
+    inactive_sections = {
+        lualine_a = {},
+        lualine_b = {},
+        lualine_c = {'filename'},
+        lualine_x = {'location'},
+        lualine_y = {},
+        lualine_z = {}
+    },
+    tabline = {},
+    winbar = {},
+    inactive_winbar = {},
+    extensions = {}
 }
+
